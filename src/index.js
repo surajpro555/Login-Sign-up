@@ -19,6 +19,7 @@ app.get('/sign',(req,res)=>{
 })
 
 app.post('/login',async (req,res)=>{
+    const msg={ name:``};
     try {
         const check=await collection.findOne({name:req.body.name})
         if(check.password===req.body.password)
@@ -26,10 +27,12 @@ app.post('/login',async (req,res)=>{
             res.render('home',check)
         }
         else{
-            res.render('loginwrong')
+            msg.name=`Wrong Details`;
+            res.render('login',msg)
         }
     } catch (error) {
-        res.render('loginwrong')
+        msg.name='Wrong Details'
+        res.render('login',msg)
     }
 })
 app.post('/sign',async (req,res)=>{
@@ -37,9 +40,25 @@ app.post('/sign',async (req,res)=>{
         name:req.body.name,
         password:req.body.password
     }
-    await collection.insertMany([data])
-    res.render('login')
+    const msg={ name:``};
+        try{
+           const count=await collection.count({name:req.body.name})
+           if(count>0)
+           {
+              msg.name=`Account already exist`
+              res.render('sign',msg)
+           }
+           else
+           {
+             await collection.insertMany([data])
+             res.render('login')
+           }
+        }
+        catch(err)
+        {
+           alert('Server Error.............')  
+        }
 })
 app.listen(2000,()=>{
-    console.log('Server connected....')
+    console.log('Server connected....\nserver runing on port 2000')
 })
